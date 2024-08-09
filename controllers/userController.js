@@ -68,7 +68,8 @@ exports.createUser = async (req, res) => {
         // return a response
         res.status(201).json({
             message: `Check your email: ${user.email} to verify your account.`,
-            data: user
+            data: user,
+            token
         })
 
     } catch (error) {
@@ -122,7 +123,7 @@ exports.verifyEmail = async (req, res) => {
     } catch (error) {
         if (error instanceof jwt.JsonWebTokenError) {
             return res.status(404).json({
-                message: " Try Again, timed-out."
+                message: "timed-out, please Try Log-in Again."
             });
         }
         res.status(500).json({
@@ -253,7 +254,7 @@ exports.resetPassword = async (req, res) => {
     } catch (error) {
         if (error instanceof jwt.JsonWebTokenError) {
             return res.status(404).json({
-                message: "Try Again timed-out."
+                message: " timed-out, please Log-in again ."
             });
         }
         console.error("Something went wrong", error.message);
@@ -262,6 +263,27 @@ exports.resetPassword = async (req, res) => {
         });
     }
 };
+
+
+exports.updateUser = async (req, res)=>{
+    try {
+        const userId = req.params.id;
+        const {fullname}=req.body
+
+        const data={
+            fullname
+        }
+        const updatedUser = await userModel.findByIdAndUpdate( userId, data,{new:true});
+       
+         return   res.status(200).json({
+                message: "user updated successfully",
+                data: updatedUser
+            })
+    } catch (error) {
+      return  res.status(500).json(error.message)
+    }
+}
+
 
 
 
@@ -411,7 +433,7 @@ exports.signOut = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
     try {
-        const allUsers = await userModel.find();
+        const allUsers = await userModel.find().sort({created:-1});
         res.status(200).json({
             message: 'List of all users in the database',
             allUsers

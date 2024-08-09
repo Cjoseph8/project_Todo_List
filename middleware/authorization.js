@@ -23,7 +23,7 @@ const authenticate = async (req, res, next) => {
         }
 
         const decodedToken = jwt.verify(token, process.env.jwtSecret);
-
+ 
         const user = await userModel.findById(decodedToken.userId);
 
         if (!user) {
@@ -48,6 +48,7 @@ const authenticate = async (req, res, next) => {
     }
 };
 
+//Check for an Admin
 const isAdmin = async (req, res, next) => {
     try {
       if (req.user.isAdmin) {
@@ -61,8 +62,26 @@ const isAdmin = async (req, res, next) => {
       });
     }
   };
+
+  const makeAdminUpdate = async(req, res)=>{
+    try{
+      const {email} =req.body
+const findUser=await userModel.findOne({email})
+if(!findUser){
+ return res.status(404).json({ message: " user not found"})
+}
+      const admin = await userModel.findOneAndUpdate({email},{isAdmin:true},{new:true,runvalidators:true})
+    return  res.status(200).json({ message: "you are now an admin" });
+      
+    }catch(error){
+      res.status(500).json({
+        message:error.message
+      })
+    }
+  }
   
   module.exports = {
     authenticate,
     isAdmin,
+    makeAdminUpdate
   };
